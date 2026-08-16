@@ -13,10 +13,12 @@ The first working vertical slice is a dependency-free local web application. It 
 - `src/data/syntheticScenario.js`: a versioned fictional scenario definition, state table, transition table, action labels, and scoring values.
 - `src/engine/scenarioEngine.js`: session creation, available-action lookup, explicit transition execution, ordered event logging, and invalid-action rejection.
 - `src/scoring/scoreScenario.js`: pure, deterministic scoring from completed-action events.
+- `src/persistence/sessionStore.js`: versioned JSON serialization plus a browser-local storage adapter.
+- `src/persistence/replaySession.js`: deterministic state reconstruction by replaying the existing action event log through the unchanged engine API.
 - `public/`: the browser UI, which renders the current state, only currently valid actions, the event log, and score.
 - `test/`: Node built-in test coverage for transitions, invalid actions, event logging, and scoring.
 
-The scenario data is deliberately fictional: “brief,” “placeholder review,” and “handoff” are not aviation procedures.
+The scenario data is deliberately fictional: “brief,” “placeholder review,” “handoff,” and “recovery” are not aviation procedures. The second scenario contains an explicit fictional incorrect-choice/recovery path to exercise branching without presenting an operational procedure.
 
 ## Recommended architecture
 
@@ -55,6 +57,7 @@ Voice, AI, and hardware adapters produce validated normalized events. The scenar
 - Do not ship unreviewed real-world aviation procedures or represent AI output as operational guidance.
 - Start local-first and runnable without hardware or paid external services.
 - Use browser-native ES modules and Node's built-in test runner for the foundation slice to avoid framework/provider coupling.
+- Persist the complete session snapshot as versioned JSON, but treat the event log as the replay source of truth. Replay validates transitions by running the saved actions back through the scenario engine.
 
 ## Open questions
 
@@ -70,6 +73,6 @@ Voice, AI, and hardware adapters produce validated normalized events. The scenar
 
 **Phase:** First vertical slice implemented.
 
-**Completed:** Deterministic fictional scenario, event log, scoring, browser UI, static server, and automated tests.
+**Completed:** Two deterministic fictional scenarios (including a recovery branch), event log, local session persistence/replay, scoring, browser UI, static server, and automated tests.
 
-**Next build:** Add a second synthetic scenario and session persistence/replay without changing the scenario engine contract. Hardware, voice, AI, and MSFS follow behind adapters.
+**Next build:** Add scenario authoring validation and replay/debrief views without changing the scenario engine contract. Hardware, voice, AI, and MSFS follow behind adapters.

@@ -8,6 +8,8 @@ h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 
 .card { margin-top: 1rem; padding: 1.25rem; background: #19243a; border: 1px solid #30415f; border-radius: .75rem; }
 .state, .score { font-size: 1.3rem; font-weight: 700; }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+select { display: block; width: 100%; margin: .5rem 0 1rem; padding: .65rem; border-radius: .45rem; }
+.persistence-actions { margin-top: .75rem; }
 button { cursor: pointer; border: 0; border-radius: .45rem; padding: .75rem 1rem; background: #69d6bd; color: #102018; font-weight: 800; }
 button:hover { background: #9ae9d8; }
 .events { margin: 0; padding-left: 1.5rem; display: grid; gap: .45rem; color: #c5d4ea; }
