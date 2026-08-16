@@ -9,7 +9,7 @@ export function replaySession(scenario, savedSession) {
   let replayed = createScenarioSession(scenario, { clock: () => created.at });
   for (const event of events) {
     if (event.type !== "ACTION_COMPLETED") continue;
-    replayed = dispatchAction(scenario, replayed, event.action, { clock: () => event.at });
+    replayed = dispatchAction(scenario, replayed, event.action, { clock: () => event.at, source: event.source ?? "REPLAY" });
     const actual = replayed.events.at(-1);
     if (actual.from !== event.from || actual.to !== event.to) {
       throw new Error("Saved event log contains an invalid transition.");

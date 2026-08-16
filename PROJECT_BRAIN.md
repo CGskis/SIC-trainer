@@ -20,6 +20,16 @@ The first working vertical slice is a dependency-free local web application. It 
 
 The scenario data is deliberately fictional: “brief,” “placeholder review,” “handoff,” and “recovery” are not aviation procedures. The second scenario contains an explicit fictional incorrect-choice/recovery path to exercise branching without presenting an operational procedure.
 
+The PC application foundation adds desktop-oriented Train, Live Session, Debrief, History, Replay, and Settings screens. The UI is an adapter: it dispatches actions to the engine with `source: UI`; it does not own transition or scoring rules.
+
+## Event and persistence model
+
+Engine events are ordered and timestamped. Completed and invalid input events include a source (`UI`, `KEYBOARD`, `HARDWARE`, `AI`, `REPLAY`, or `SYSTEM`). Session records use a versioned schema and preserve application/scenario versions, session ID, timestamps, input events, final state, deterministic score, duration, and errors. Local history stores completed records separately from the UI. Replay reconstructs sessions by passing saved actions through the engine and rejects inconsistent transitions.
+
+## Hardware interface foundation
+
+`src/hardware/hardwareInterface.js` defines an input-source vocabulary and an adapter boundary for future normalized events such as `BUTTON_PRESSED`, `BATTERY_MASTER_ON`, and `GEAR_DOWN`. No device protocol or simulated hardware behavior exists yet. Hardware must map an input to a scenario action and dispatch it with source `HARDWARE`; the scenario engine stays device-agnostic.
+
 ## Recommended architecture
 
 Begin as a single deployable application with well-separated modules; introduce separate network services only when hardware deployment or scale requires them.
@@ -74,5 +84,7 @@ Voice, AI, and hardware adapters produce validated normalized events. The scenar
 **Phase:** First vertical slice implemented.
 
 **Completed:** Two deterministic fictional scenarios (including a recovery branch), event log, local session persistence/replay, scoring, browser UI, static server, and automated tests.
+
+**Current limitations:** Windows launch uses Node.js and the default browser; AI PIC, voice, audio, ESP32 hardware, MSFS, and user profiles intentionally remain unavailable placeholders.
 
 **Next build:** Add scenario authoring validation and replay/debrief views without changing the scenario engine contract. Hardware, voice, AI, and MSFS follow behind adapters.

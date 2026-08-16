@@ -34,13 +34,13 @@ export function getAvailableActions(scenario, session) {
   return scenario.states[session.state].availableActions;
 }
 
-export function dispatchAction(scenario, session, action, { clock = () => new Date().toISOString() } = {}) {
+export function dispatchAction(scenario, session, action, { clock = () => new Date().toISOString(), source = "UI" } = {}) {
   const nextState = scenario.transitions[session.state]?.[action];
 
   if (!nextState) {
     const invalidEvents = appendEvent(
       session,
-      { type: "INVALID_ACTION", state: session.state, action },
+      { type: "INVALID_ACTION", state: session.state, action, source },
       clock
     );
     const error = new InvalidScenarioActionError(session.state, action);
@@ -57,7 +57,7 @@ export function dispatchAction(scenario, session, action, { clock = () => new Da
     ...transitioned,
     events: appendEvent(
       session,
-      { type: "ACTION_COMPLETED", action, from: session.state, to: nextState },
+      { type: "ACTION_COMPLETED", action, from: session.state, to: nextState, source },
       clock
     )
   };

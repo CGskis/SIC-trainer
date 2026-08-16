@@ -1,77 +1,14 @@
 import { syntheticScenario } from "/src/data/syntheticScenario.js";
 import { syntheticRecoveryScenario } from "/src/data/syntheticRecoveryScenario.js";
 import { createScenarioSession, dispatchAction, getAvailableActions } from "/src/engine/scenarioEngine.js";
-import { createBrowserSessionStore } from "/src/persistence/sessionStore.js";
-import { replaySession } from "/src/persistence/replaySession.js";
 import { scoreScenario } from "/src/scoring/scoreScenario.js";
-
-const scenarios = [syntheticScenario, syntheticRecoveryScenario];
-const sessionStore = createBrowserSessionStore();
-let scenario = syntheticScenario;
-let session = createScenarioSession(scenario);
-const scenarioSelect = document.querySelector("#scenario-select");
-const saveSessionButton = document.querySelector("#save-session");
-const replaySessionButton = document.querySelector("#replay-session");
-const stateElement = document.querySelector("#state");
-const actionsElement = document.querySelector("#actions");
-const eventsElement = document.querySelector("#events");
-const scoreElement = document.querySelector("#score");
-const scoreItemsElement = document.querySelector("#score-items");
-const errorElement = document.querySelector("#error");
-
-for (const item of scenarios) {
-  const option = document.createElement("option");
-  option.value = item.id;
-  option.textContent = item.title;
-  scenarioSelect.append(option);
-}
-
-scenarioSelect.addEventListener("change", () => {
-  scenario = scenarios.find((item) => item.id === scenarioSelect.value);
-  session = createScenarioSession(scenario);
-  errorElement.textContent = "";
-  render();
-});
-
-saveSessionButton.addEventListener("click", () => {
-  sessionStore.save(`sic-trainer:${scenario.id}`, session);
-  errorElement.textContent = "Session saved locally.";
-});
-
-replaySessionButton.addEventListener("click", () => {
-  const savedSession = sessionStore.load(`sic-trainer:${scenario.id}`);
-  if (savedSession === null) { errorElement.textContent = "No saved session for this scenario."; return; }
-  session = replaySession(scenario, savedSession);
-  errorElement.textContent = "Saved event log replayed.";
-  render();
-});
-
-function render() {
-  const score = scoreScenario(scenario, session);
-  document.querySelector("h1").textContent = scenario.title;
-  stateElement.textContent = `${session.state} — ${scenario.states[session.state].label}`;
-  actionsElement.replaceChildren(...getAvailableActions(scenario, session).map((action) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = scenario.actionLabels[action];
-    button.addEventListener("click", () => {
-      try { session = dispatchAction(scenario, session, action); errorElement.textContent = ""; }
-      catch (error) { errorElement.textContent = error.message; }
-      render();
-    });
-    return button;
-  }));
-  scoreElement.textContent = `${score.earned} / ${score.possible} points (${score.percentage}%)${score.complete ? " — complete" : ""}`;
-  scoreItemsElement.replaceChildren(...score.items.map((item) => {
-    const line = document.createElement("li");
-    line.textContent = `${scenario.actionLabels[item.action]}: ${item.earned}/${item.points}`;
-    return line;
-  }));
-  eventsElement.replaceChildren(...session.events.map((event) => {
-    const line = document.createElement("li");
-    line.textContent = `#${event.sequence} ${event.type} · ${event.action ?? event.state ?? ""}`;
-    return line;
-  }));
-}
-
-render();
+import { createTrainingHistoryStore, createSessionRecord } from "/src/persistence/trainingHistory.js";
+import { replaySession } from "/src/persistence/replaySession.js";
+const APP_VERSION="0.2.0", scenarios=[syntheticScenario,syntheticRecoveryScenario], history=createTrainingHistoryStore();
+let scenario=scenarios[0],session=createScenarioSession(scenario),startedAt=null,lastRecord=null;
+const $=s=>document.querySelector(s), select=$("#scenario-select"), message=$("#messages");
+scenarios.forEach(x=>select.add(new Option(x.title,x.id)));select.onchange=()=>{scenario=scenarios.find(x=>x.id===select.value);start(false)};
+$("#nav").onclick=e=>{if(e.target.dataset.screen)show(e.target.dataset.screen)};
+$("#start").onclick=()=>{start(true);show("live")};$("#restart").onclick=()=>start(true);$("#end").onclick=()=>finish();
+$("#replay-last").onclick=()=>{const record=history.list()[0];if(!record){$("#replay-content").textContent="No completed session saved.";return}scenario=scenarios.find(x=>x.id===record.scenarioId);const loaded={scenarioId:record.scenarioId,scenarioVersion:record.scenarioVersion,state:record.finalState,events:record.inputEvents};const replayed=replaySession(scenario,loaded);const same=replayed.state===record.finalState&&scoreScenario(scenario,replayed).earned===record.finalScore.earned;$("#replay-content").textContent=same?`Replay verified: ${replayed.state}, ${record.finalScore.earned}/${record.finalScore.possible}.`:"Replay mismatch — deterministic validation failed."};
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));if(id==='history')renderHistory();if(id==='debrief')renderDebrief()}function start(reset=true){if(reset){session=createScenarioSession(scenario);startedAt=new Date().toISOString();lastRecord=null}render()}function finish(){if(!startedAt)return;const endedAt=new Date().toISOString(),score=scoreScenario(scenario,session);const record=createSessionRecord({session,scenario,applicationVersion:APP_VERSION,startedAt,endedAt});record.finalScore=score;history.add(record);lastRecord=record;render();show('debrief')}function render(){const score=scoreScenario(scenario,session);$('#current-scenario').textContent=`${scenario.title} v${scenario.version}`;$('#state').textContent=`${session.state} — ${scenario.states[session.state].label}`;$('#timer').textContent=startedAt?`${Math.floor((Date.now()-new Date(startedAt))/1000)} seconds`:'Not started';$('#score').textContent=`${score.earned}/${score.possible} (${score.percentage}%)`;$('#actions').replaceChildren(...getAvailableActions(scenario,session).map(action=>{const b=document.createElement('button');b.textContent=scenario.actionLabels[action];b.onclick=()=>{try{session=dispatchAction(scenario,session,action,{source:'UI'});message.textContent=''}catch(error){message.textContent=error.message}render();if(session.state==='COMPLETE')finish()};return b}));$('#events').replaceChildren(...session.events.map(e=>{const li=document.createElement('li');li.textContent=`#${e.sequence} ${e.type} · ${e.action??e.state} · ${e.source??'SYSTEM'}`;return li}))}function renderDebrief(){const r=lastRecord;if(!r)return;const invalid=r.errors.length,correct=r.inputEvents.filter(x=>x.type==='ACTION_COMPLETED').length;$('#debrief-content').innerHTML=`<p><b>Final score:</b> ${r.finalScore.earned}/${r.finalScore.possible}</p><p><b>Completion time:</b> ${r.durationMs} ms</p><p><b>Correct actions:</b> ${correct} · <b>Invalid actions:</b> ${invalid} · <b>Points lost:</b> ${r.finalScore.possible-r.finalScore.earned}</p><p><b>Final state:</b> ${r.finalState}</p>`}function renderHistory(){const records=history.list();$('#history-content').innerHTML=records.length?records.map(r=>`<p><b>${r.sessionId}</b><br>${r.scenarioId} · ${r.finalState} · ${r.finalScore.earned}/${r.finalScore.possible} · ${r.startedAt}</p>`).join(''):'No completed sessions yet.'}show('train');render();

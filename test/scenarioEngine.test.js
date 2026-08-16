@@ -38,7 +38,7 @@ test("event log has ordered, timestamped session and completed-action events", (
   session = dispatchAction(syntheticScenario, session, "START", { clock });
   assert.deepEqual(session.events, [
     { sequence: 1, at: "2026-01-01T00:00:00.000Z", type: "SESSION_CREATED", state: "READY" },
-    { sequence: 2, at: "2026-01-01T00:00:01.000Z", type: "ACTION_COMPLETED", action: "START", from: "READY", to: "BRIEFING" }
+    { sequence: 2, at: "2026-01-01T00:00:01.000Z", type: "ACTION_COMPLETED", action: "START", from: "READY", to: "BRIEFING", source: "UI" }
   ]);
 });
 
