@@ -1,0 +1,14 @@
+:root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #101827; color: #edf4ff; }
+body { margin: 0; }
+main { width: min(760px, calc(100% - 2rem)); margin: 3rem auto; }
+h1 { margin: 0 0 .5rem; font-size: clamp(2rem, 7vw, 3.5rem); }
+h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: .08em; color: #aabbd5; }
+.eyebrow { color: #69d6bd; font-weight: 700; letter-spacing: .1em; font-size: .75rem; }
+.notice { color: #ffd889; }
+.card { margin-top: 1rem; padding: 1.25rem; background: #19243a; border: 1px solid #30415f; border-radius: .75rem; }
+.state, .score { font-size: 1.3rem; font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+button { cursor: pointer; border: 0; border-radius: .45rem; padding: .75rem 1rem; background: #69d6bd; color: #102018; font-weight: 800; }
+button:hover { background: #9ae9d8; }
+.events { margin: 0; padding-left: 1.5rem; display: grid; gap: .45rem; color: #c5d4ea; }
+.error { min-height: 1.2rem; color: #ff9b9b; }

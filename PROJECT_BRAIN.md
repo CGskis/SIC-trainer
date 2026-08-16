@@ -8,7 +8,15 @@ Training procedure data is supplied, reviewed, and versioned by humans. AI may f
 
 ## Current architecture
 
-This repository is in its initial foundation state. It currently contains this shared technical baseline and no application code, dependency manifest, tests, or training/procedure data.
+The first working vertical slice is a dependency-free local web application. It contains:
+
+- `src/data/syntheticScenario.js`: a versioned fictional scenario definition, state table, transition table, action labels, and scoring values.
+- `src/engine/scenarioEngine.js`: session creation, available-action lookup, explicit transition execution, ordered event logging, and invalid-action rejection.
+- `src/scoring/scoreScenario.js`: pure, deterministic scoring from completed-action events.
+- `public/`: the browser UI, which renders the current state, only currently valid actions, the event log, and score.
+- `test/`: Node built-in test coverage for transitions, invalid actions, event logging, and scoring.
+
+The scenario data is deliberately fictional: “brief,” “placeholder review,” and “handoff” are not aviation procedures.
 
 ## Recommended architecture
 
@@ -42,10 +50,11 @@ Voice, AI, and hardware adapters produce validated normalized events. The scenar
 
 - Only reviewed, versioned content is authoritative; every run records its content version.
 - Scenario transitions and scoring are deterministic and testable; AI output is untrusted input until validated.
-- Define one timestamped event envelope shared by UI, hardware, voice, AI, scoring, and replay.
+- Define one timestamped event envelope shared by UI, hardware, voice, AI, scoring, and replay. The initial shape is `sequence`, `at`, `type`, plus event-specific fields.
 - Keep Vapi, LLM, speech, ESP32, and MSFS behind replaceable adapter interfaces.
 - Do not ship unreviewed real-world aviation procedures or represent AI output as operational guidance.
 - Start local-first and runnable without hardware or paid external services.
+- Use browser-native ES modules and Node's built-in test runner for the foundation slice to avoid framework/provider coupling.
 
 ## Open questions
 
@@ -59,8 +68,8 @@ Voice, AI, and hardware adapters produce validated normalized events. The scenar
 
 ## Current status
 
-**Phase:** Foundation definition.
+**Phase:** First vertical slice implemented.
 
-**Completed:** Initial repository created locally with this project brief.
+**Completed:** Deterministic fictional scenario, event log, scoring, browser UI, static server, and automated tests.
 
-**Next build:** An event-driven scenario-engine slice using synthetic placeholder content, deterministic scoring, automated tests, and a minimal UI. Hardware, voice, AI, and MSFS follow behind adapters.
+**Next build:** Add a second synthetic scenario and session persistence/replay without changing the scenario engine contract. Hardware, voice, AI, and MSFS follow behind adapters.
