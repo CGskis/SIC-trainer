@@ -81,10 +81,10 @@ Voice, AI, and hardware adapters produce validated normalized events. The scenar
 
 ## Current status
 
-**Phase:** First vertical slice implemented.
+**Phase:** SIC Core platform foundation implemented.
 
-**Completed:** Two deterministic fictional scenarios (including a recovery branch), event log, local session persistence/replay, scoring, browser UI, static server, and automated tests.
+**Completed:** The original deterministic engine, scoring, persistence, and replay remain unchanged. The platform now has a reusable SIC Core / aircraft-module boundary, a synthetic aircraft-panel module, normalized `CONTROL_CHANGED` input events, physical-state mismatch detection, a browser-simulated hardware self-test, simulated gaze and reaction-timeline contracts, constrained instructor-event injection, persisted random seeds, and a library of ten synthetic scenarios. The browser now exposes Home, Train, Scenarios, Cockpit, Hardware, Replays, Instructor, Editor, and Settings pages.
 
-**Current limitations:** Windows launch uses Node.js and the default browser; AI PIC, voice, audio, ESP32 hardware, MSFS, and user profiles intentionally remain unavailable placeholders.
+**Current limitations:** Hardware is a browser simulator; the cockpit is visual placeholder art; gaze is mouse/provider-ready architecture only; instructor is local placeholder; replay is verification rather than a timeline player; the editor is a placeholder. AI PIC, voice, audio, ESP32 hardware, MSFS, 3D assets, and user profiles intentionally remain unavailable placeholders. All scenarios remain synthetic and are not aircraft procedures.
 
-**Next build:** Add scenario authoring validation and replay/debrief views without changing the scenario engine contract. Hardware, voice, AI, and MSFS follow behind adapters.
+**Next build:** Connect the physical-state preflight check to scenario start, add chronological replay/debrief views and no-peeking mode, then build editor serialization/validation. Hardware, voice, AI, and MSFS remain adapter work behind this core.
